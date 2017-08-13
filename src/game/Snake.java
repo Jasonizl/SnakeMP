@@ -2,7 +2,7 @@ package game;
 
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
-import sample.Constants;
+import util.Constants;
 
 import java.util.ArrayList;
 
