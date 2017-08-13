@@ -1,10 +1,7 @@
-package sample;
+package util;
 
 
-import javafx.scene.text.*;
 import javafx.scene.text.Font;
-
-import java.awt.*;
 
 /**
  * Created by xJazo on 12.08.2017.

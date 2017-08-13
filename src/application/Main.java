@@ -1,4 +1,4 @@
-package sample;
+package application;
 
 import game.Snake;
 import javafx.animation.AnimationTimer;
@@ -6,19 +6,20 @@ import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
+import javafx.scene.control.ColorPicker;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import util.Constants;
+import util.Player;
 
 public class Main extends Application {
 
@@ -26,6 +27,7 @@ public class Main extends Application {
     private Stage primaryStage = null;
     private Stage gameStage = null;
     private Snake game;
+    private Player player;
 
     // UI Components
     private Canvas canvas;
@@ -53,12 +55,14 @@ public class Main extends Application {
     private void initMainApp(Stage startStage) {
         Group root = new Group();
         Scene s = new Scene(root, Constants.menuWidth, Constants.menuHeight);
+        player = new Player();
 
         // Layout
-        BorderPane border = new BorderPane();
-        VBox vbox = new VBox(25);
-        vbox.setAlignment(Pos.BASELINE_CENTER);
-        vbox.setPadding(new Insets(100, 0, 0,0));
+        GridPane gridpane = new GridPane();
+        gridpane.getColumnConstraints().add(new ColumnConstraints(25));
+        gridpane.getColumnConstraints().add(new ColumnConstraints(120));
+        gridpane.getRowConstraints().add(new RowConstraints(25));
+        gridpane.setVgap(10);
 
         // Buttons
         Button btnHost = new Button("Start game");
@@ -66,20 +70,30 @@ public class Main extends Application {
             createGameStage();
             startStage.close();
         });
+        btnHost.setMaxWidth(Double.MAX_VALUE);
+        GridPane.setRowIndex(btnHost, 1);
+        GridPane.setColumnIndex(btnHost, 1);
 
         Button btnConnect = new Button("Connect to game");
         btnConnect.setOnAction(event -> {
             // TODO: connect to other clients
         });
+        btnConnect.setMaxWidth(Double.MAX_VALUE);
+        GridPane.setRowIndex(btnConnect, 2);
+        GridPane.setColumnIndex(btnConnect, 1);
 
-        vbox.getChildren().addAll(btnHost, btnConnect);
-        vbox.setPrefSize(Constants.menuWidth, Constants.menuHeight);
+        // Optional things like color, username here: TODO
+        // Also needs title at the top!
 
 
-        border.setCenter(vbox);
 
+        ColorPicker cp1 = new ColorPicker(player.getColor());
+        GridPane.setRowIndex(cp1, 4);
+        GridPane.setColumnIndex(cp1, 1);
 
-        root.getChildren().add(border);
+        gridpane.getChildren().addAll(btnHost, btnConnect, cp1);
+
+        root.getChildren().add(gridpane);
         startStage.setScene(s);
     }
 
