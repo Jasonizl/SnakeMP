@@ -16,7 +16,7 @@ public class Constants {
     public static final int GAME_SIZE = 50;
     public static final int TILE_SIZE = 14; // 14*50 = 700
 
-    public static Font consoleFont = new Font("Arial", 14);
+    public static Font consoleFont = new Font("Verdana", 14);
     public static Font gameFont = new Font("Courier", 28);
 
 }

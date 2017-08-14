@@ -10,13 +10,13 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.Button;
-import javafx.scene.control.ColorPicker;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.*;
+import javafx.scene.effect.BlendMode;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import util.Constants;
 import util.Player;
@@ -33,6 +33,8 @@ public class Main extends Application {
     private Canvas canvas;
     private Button btnSend;
     private TextArea consoleInput;
+    private TextArea console;
+    private ListView userList;
 
 
     @Override
@@ -61,8 +63,19 @@ public class Main extends Application {
         GridPane gridpane = new GridPane();
         gridpane.getColumnConstraints().add(new ColumnConstraints(25));
         gridpane.getColumnConstraints().add(new ColumnConstraints(120));
+        gridpane.getColumnConstraints().add(new ColumnConstraints(120));
         gridpane.getRowConstraints().add(new RowConstraints(25));
         gridpane.setVgap(10);
+
+        Label title = new Label(Constants.TITLE);
+        title.setFont(new Font("Courier New", 26));
+        title.autosize();
+        GridPane.setRowIndex(title, 1);
+        GridPane.setColumnIndex(title, 1);
+
+        Separator hSep = new Separator();
+        GridPane.setRowIndex(hSep, 2);
+        GridPane.setColumnIndex(hSep, 1);
 
         // Buttons
         Button btnHost = new Button("Start game");
@@ -71,7 +84,7 @@ public class Main extends Application {
             startStage.close();
         });
         btnHost.setMaxWidth(Double.MAX_VALUE);
-        GridPane.setRowIndex(btnHost, 1);
+        GridPane.setRowIndex(btnHost, 3);
         GridPane.setColumnIndex(btnHost, 1);
 
         Button btnConnect = new Button("Connect to game");
@@ -79,19 +92,59 @@ public class Main extends Application {
             // TODO: connect to other clients
         });
         btnConnect.setMaxWidth(Double.MAX_VALUE);
-        GridPane.setRowIndex(btnConnect, 2);
+        GridPane.setRowIndex(btnConnect, 4);
         GridPane.setColumnIndex(btnConnect, 1);
 
-        // Optional things like color, username here: TODO
-        // Also needs title at the top!
+        Label options = new Label("Options");
+        options.setFont(new Font("Courier New", 22));
+        options.autosize();
+        GridPane.setRowIndex(options, 5);
+        GridPane.setColumnIndex(options, 1);
 
+        Separator hSep2 = new Separator();
+        GridPane.setRowIndex(hSep2, 6);
+        GridPane.setColumnIndex(hSep2, 1);
 
+        Label descrUsername = new Label("Username:");
+        descrUsername.setFont(Constants.consoleFont);
+        descrUsername.autosize();
+        GridPane.setRowIndex(descrUsername, 7);
+        GridPane.setColumnIndex(descrUsername, 1);
+
+        TextField txfUsername = new TextField(player.getUsername());
+        txfUsername.setFont(Constants.consoleFont);
+        txfUsername.autosize();
+        txfUsername.setOnAction(event -> {
+            if(txfUsername.getText().length() > 12) {
+                txfUsername.setText(txfUsername.getText().substring(0,12));
+            }
+            player.setUsername(txfUsername.getText());
+        });
+        GridPane.setRowIndex(txfUsername, 8);
+        GridPane.setColumnIndex(txfUsername, 1);
+
+        Label descrColor = new Label("Snake color:");
+        descrColor.setFont(Constants.consoleFont);
+        descrColor.autosize();
+        GridPane.setRowIndex(descrColor, 9);
+        GridPane.setColumnIndex(descrColor, 1);
 
         ColorPicker cp1 = new ColorPicker(player.getColor());
-        GridPane.setRowIndex(cp1, 4);
+        cp1.setOnAction(event -> {
+            Color c = cp1.getValue();
+            if (c.getBrightness() == 1.0) {
+                c = Color.color(Math.random(), Math.random(), Math.random(), 1);
+                cp1.setValue(c);
+            }
+            player.setColor(c);
+        });
+        GridPane.setRowIndex(cp1, 10);
         GridPane.setColumnIndex(cp1, 1);
 
-        gridpane.getChildren().addAll(btnHost, btnConnect, cp1);
+        // TODO: write textfields for ip and port
+
+
+        gridpane.getChildren().addAll(title, hSep, btnHost, btnConnect, options, hSep2, descrUsername, txfUsername, descrColor, cp1);
 
         root.getChildren().add(gridpane);
         startStage.setScene(s);
@@ -104,14 +157,21 @@ public class Main extends Application {
         Stage gameStage = new Stage();
         Group root = new Group();
         Scene s = new Scene(root, Constants.gameWindowWidth, Constants.gameWindowHeight);
-        BorderPane layout = new BorderPane();
         game = new Snake(0);
+        GridPane mainGridpane = new GridPane();
+        ColumnConstraints c1 = new ColumnConstraints(700);
+        ColumnConstraints c2 = new ColumnConstraints(450);
+        RowConstraints r1 = new RowConstraints(720);
+
+        mainGridpane.getColumnConstraints().addAll(c1, c2);
+        mainGridpane.getRowConstraints().addAll(r1);
+        mainGridpane.setHgap(10);
 
         // put things onto layout (center and right)
-        layout.setRight(createChatComponents());
-        layout.setCenter(createGameComponents());
+        mainGridpane.add(createChatComponents(),1, 0);
+        mainGridpane.add(createGameComponents(), 0, 0);
 
-        root.getChildren().add(layout);
+        root.getChildren().add(mainGridpane);
 
         s.setOnKeyPressed(new EventHandler<KeyEvent>() {
             @Override
@@ -123,7 +183,6 @@ public class Main extends Application {
                         case RIGHT: if(!game.right && !game.left) game.setDirection(2); break;
                         case DOWN: if(!game.down && !game.up) game.setDirection(3); break;
                         case ENTER: if(!game.isStarted) game.isStarted = true; break;
-                        case P: if(!game.isHalted) game.isHalted = true; break;
                     }
             }
         });
@@ -145,18 +204,24 @@ public class Main extends Application {
      */
     private FlowPane createChatComponents() {
         FlowPane chatFlowPane = new FlowPane();
-        chatFlowPane.setPadding(new Insets(10, 0, 0, 0));
+        chatFlowPane.setPadding(new Insets(10, 0, 0, 10));
 
         // actual components
-        TextArea console = new TextArea();
-        console.setPrefSize(320, 645);
+        userList = new ListView();
+        userList.setPrefSize(320, 100);
+        userList.setEditable(false);
+        userList.setFixedCellSize(25);
+        userList.setFocusTraversable(false);
+
+        console = new TextArea();
+        console.setPrefSize(320, 545);
         console.setWrapText(true);
         console.setEditable(false);
         console.setFocusTraversable(false);
         console.setFont(Constants.consoleFont);
 
         consoleInput = new TextArea();
-        consoleInput.setPrefSize(220, 50);
+        consoleInput.setPrefSize(220, 45);
         consoleInput.setWrapText(true);
         consoleInput.setFocusTraversable(false);
         consoleInput.setFont(Constants.consoleFont);
@@ -165,6 +230,7 @@ public class Main extends Application {
             public void handle(KeyEvent event) {
                 if(event.getCode() == KeyCode.ENTER) {
                     btnSend.fire();
+                    event.consume();
                 }
             }
         });
@@ -172,18 +238,19 @@ public class Main extends Application {
         btnSend = new Button("send");
         btnSend.setFont(Constants.consoleFont);
         btnSend.setFocusTraversable(false);
-        btnSend.setPrefSize(95, 50);
+        btnSend.setPrefSize(95, 45);
         btnSend.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
+                console.appendText(player.getUsername() + ":" + consoleInput.getText() + "\n");
                 consoleInput.clear();
-                game.isHalted = false;
+                canvas.requestFocus();
             }
         });
 
         chatFlowPane.setHgap(5);
         chatFlowPane.setVgap(5);
-        chatFlowPane.getChildren().addAll(console, consoleInput, btnSend);
+        chatFlowPane.getChildren().addAll(userList, console, consoleInput, btnSend);
 
         return chatFlowPane;
     }
@@ -194,14 +261,11 @@ public class Main extends Application {
      */
     private FlowPane createGameComponents() {
         FlowPane gameFlowPane = new FlowPane();
-        gameFlowPane.setPadding(new Insets(10, 10, 0, 10));
+        gameFlowPane.setPadding(new Insets(10, 0, 0, 10));
         this.canvas = new Canvas(Constants.canvasWidth, Constants.canvasHeight);
         GraphicsContext gc = canvas.getGraphicsContext2D();
 
         game.gc = gc;
-        //gc.setFill(Color.BLACK);
-        //gc.fillRect(0,0, 700, 700);
-        //drawGrid(gc);
 
         gameFlowPane.getChildren().add(canvas);
         canvas.requestFocus();
@@ -226,7 +290,7 @@ public class Main extends Application {
                     //DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
                     //Date date = new Date();
                     //System.out.println(dateFormat.format(date)); //2016/11/16 12:08:43
-                    if(!canvas.isFocused() && !game.isHalted)
+                    if(!canvas.isFocused() && !consoleInput.isFocused())
                        canvas.requestFocus();
 
                     if(!game.gameover)
@@ -235,6 +299,10 @@ public class Main extends Application {
                 }
                 else if((lastTime == 0 || now - lastTime > menuUpdateRate)) {
                     lastTime = now;
+
+                    if(!canvas.isFocused() && !consoleInput.isFocused())
+                        canvas.requestFocus();
+
                     game.drawMenu();
                 }
 

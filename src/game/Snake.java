@@ -19,7 +19,6 @@ public class Snake {
     public GraphicsContext gc;
     public boolean up = false, left = false, right = false, down = false;
     public boolean isStarted;
-    public boolean isHalted; // if someone wants to write this has to be set
     public boolean gameover;
     public int eatenFruits = 0;
 
@@ -27,7 +26,6 @@ public class Snake {
         this.id = id;
         this.snakepart = new ArrayList<>();
         this.isStarted = false;
-        this.isHalted = false;
         this.gameover = false;
         this.fruit = new Pair(25,25);
 
@@ -106,7 +104,6 @@ public class Snake {
                 currentSnakepart = snakepart.get(i);
                 if(snakeHead.equals(currentSnakepart)) {
                     gameover = true;
-                    isHalted = true;
                     return;
                 }
             }

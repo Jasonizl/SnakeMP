@@ -12,8 +12,8 @@ public class Player {
     private Color color;
 
     public Player() {
-        this.id = (int) Math.random()*Integer.MAX_VALUE - 1;
-        this.username = "Player_" + this.id;
+        this.id = (int) (Math.random()*10000);
+        this.username = "Player" + this.id;
         this.color = Color.color(Math.random(), Math.random(), Math.random(), 1);
     }
 
